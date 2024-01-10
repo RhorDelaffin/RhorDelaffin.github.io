@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Rhor">
+    <meta name="description" content="Remlok Industries - Moon Analysis to Table">
+    <title>Remlok Industries - Moon Analysis to Table</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Remlok Industries - Moon Analysis to Table</h1>
+    <textarea id="moonData" rows="10" cols="50" placeholder="Paste clipboard here..."></textarea>
+    <br>
+    <button onclick="generateMoonObject()">Convert to table</button>
+    <br>
+    <textarea id="outputMoonObject" rows="10" cols="50" readonly></textarea>
+
+    <script>
+        function convertToMoonObject(text) {
+            const moons = {};
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+
+            let currentMoon = null;
+
+            lines.forEach(line => {
+                if (line.includes('- Moon')) {
+                    const moonInfo = line.split(' - Moon ');
+                    const planetName = moonInfo[0].trim();
+                    const moonNumber = parseInt(moonInfo[1], 10);
+
+                    currentMoon = {
+                        planet: planetName,
+                        moon: `Moon ${moonNumber}`,
+                        minerals: [],
+                    };
+
+                    moons[`${planetName} - Moon ${moonNumber}`] = currentMoon;
+                } else if (currentMoon) {
+                    const [mineral, value] = line.trim().split(/\s+/);
+                    currentMoon.minerals.push({
+                        mineral: mineral,
+                        value: parseFloat(value),
+                    });
+                }
+            });
+
+            return moons;
+        }
+
+        function generateMoonObject() {
+            const inputText = document.getElementById('moonData').value;
+            const moonObject = convertToMoonObject(inputText);
+
+            // Convertir l'objet Moon en tableau de données
+            let outputText = '';
+            for (const key in moonObject) {
+                const moon = moonObject[key];
+                let row = `${moon.planet}\t${moon.moon}\tOui\t`
+
+                moon.minerals.forEach(mineral => {
+                    row += `${mineral.mineral}\t${mineral.value.toLocaleString('fr-FR')}\t`;
+                });
+
+                outputText = outputText + '\n' + row.trim();
+            }
+
+            // Afficher le tableau de données au format JSON dans la deuxième textarea
+            const outputTextarea = document.getElementById('outputMoonObject');
+            outputTextarea.value = outputText.trim();
+        }
+    </script>
+</body>
+
+</html>
